@@ -2,22 +2,25 @@ import telebot
 
 # --- ДАННЫЕ ---
 TOKEN = '8613717747:AAFdi1AU7e-jdACCXl1KfHW8PqQ4036F2dc'
-MY_ID = 8322888745 # <--- ТВОЙ ID
+MY_ID = 8322888745 # Твой ID
 # --------------
 
 bot = telebot.TeleBot(TOKEN)
 
-# Хранилище для связки сообщений (чтобы бот знал, куда отвечать)
+# Хранилище: ID в личке бота -> {chat_id: ID группы, msg_id: ID сообщения в группе}
 questions = {}
 
 @bot.message_handler(func=lambda m: m.text and "рубибот" in m.text.lower())
 def forward_to_ruby(message):
     try:
-        # Пересылаем сообщение
+        # Пересылаем сообщение Руби
         sent_msg = bot.forward_message(MY_ID, message.chat.id, message.message_id)
         
-        # Запоминаем: ID сообщения в твоей личке = ID группы
-        questions[sent_msg.message_id] = message.chat.id
+        # Сохраняем и ID чата, и ID конкретного сообщения
+        questions[sent_msg.message_id] = {
+            'chat_id': message.chat.id,
+            'orig_msg_id': message.message_id
+        }
         
         bot.send_message(MY_ID, f"🌟 Вопрос из чата '{message.chat.title}'", reply_to_message_id=sent_msg.message_id)
     except Exception as e:
@@ -26,22 +29,22 @@ def forward_to_ruby(message):
 @bot.message_handler(func=lambda m: m.reply_to_message is not None and m.chat.id == MY_ID)
 def answer_to_group(message):
     try:
-        # Ищем ID чата в нашем словаре по ID сообщения, на которое ты отвечаешь
         original_msg_id = message.reply_to_message.message_id
-        target_chat_id = questions.get(original_msg_id)
+        data = questions.get(original_msg_id)
 
-        # Если в словаре не нашли, пробуем достать из пересланного (на всякий случай)
-        if not target_chat_id:
-            if message.reply_to_message.forward_from_chat:
-                target_chat_id = message.reply_to_message.forward_from_chat.id
-            elif message.reply_to_message.forward_from:
-                target_chat_id = message.reply_to_message.forward_from.id
-
-        if target_chat_id:
-            bot.send_message(target_chat_id, message.text)
-            bot.send_message(MY_ID, "✅ Улетело в группу!")
+        if data:
+            # Отправляем ответ в группу как REPLY на исходное сообщение
+            bot.send_message(
+                data['chat_id'], 
+                message.text, 
+                reply_to_message_id=data['orig_msg_id']
+            )
+            bot.send_message(MY_ID, "✅ Улетело в группу с реплаем!")
         else:
-            bot.send_message(MY_ID, "❌ Не понял куда слать. Попробуй ответить на само пересланное сообщение.")
+            # Если в словаре нет (например, бот перезагрузился), шлем просто так
+            if message.reply_to_message.forward_from_chat:
+                bot.send_message(message.reply_to_message.forward_from_chat.id, message.text)
+                bot.send_message(MY_ID, "✅ Отправлено без реплая (память очистилась)")
             
     except Exception as e:
         bot.send_message(MY_ID, f"❌ Ошибка: {e}")
