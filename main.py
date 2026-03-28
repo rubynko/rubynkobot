@@ -48,5 +48,31 @@ def answer_to_group(message):
             
     except Exception as e:
         bot.send_message(MY_ID, f"❌ Ошибка: {e}")
+        
+# --- ОБРАБОТЧИК ВСТУПЛЕНИЯ В ГРУППУ ---
+@bot.message_handler(content_types=['new_chat_members'])
+def welcome_bot(message):
+    for user in message.new_chat_members:
+        # Проверяем, что в чат добавили именно нашего бота
+        if user.id == bot.get_me().id:
+            try:
+                # Ссылка на твой арт или любую картинку
+                photo_url = 'https://i.pinimg.com/736x/83/04/c7/8304c70b08c191656de22d3dc5e2b702.jpg' 
+                
+                caption_text = (
+                    "Привет!! Я - Рубибот, роботизированная версия Руби. \n\n"
+                    "Я РЕАЛЬНО мощный чат-менеджер. Если есть вопросы - "
+                    "просто напиши в чате 'Рубибот [твой вопрос]', и я отвечу!"
+                    "арт cr - team salvato official ddlc"
+                    "по вопросам к создателю бота - @rubynk0"
+                )
+                
+                # Отправляем фото с подписью
+                bot.send_photo(message.chat.id, photo_url, caption=caption_text)
+                print(f"Поприветствовал чат: {message.chat.title}")
+            except Exception as e:
+                # Если с картинкой беда, просто шлем текст
+                bot.send_message(message.chat.id, "Привет! Я Рубибот, и я тут самый ахуенный. Вопросы?")
+                print(f"Ошибка в приветствии: {e}")
 
 bot.polling(none_stop=True)
