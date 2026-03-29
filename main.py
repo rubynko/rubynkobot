@@ -19,7 +19,7 @@ def ruby_random(message):
         options = [line.strip() for line in raw_text.split('\n') if line.strip()]
         
         if not options:
-            bot.reply_to(message, "Эй, а где варианты? Напиши их с новой строчки после 'Рубибот рандом'! ✨")
+            bot.reply_to(message, "ало а где варианты? напиши их с новой строчки после 'Рубибот рандом'")
             return
             
         # Выбираем случайный вариант
