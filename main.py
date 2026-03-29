@@ -47,7 +47,7 @@ def handle_messages(message):
     if "рубибот" in msg_text:
         # Если включен спящий режим
         if is_sleeping:
-            bot.reply_to(message, "💤 Рубибот сейчас спит и видит сны про Соника... Сорян, чел, отвечу позже!")
+            bot.reply_to(message, "💤 Рубибот сейчас спит и... сорян, отвечу позже!")
             return
 
         # Если не спит — пересылаем всё тебе
